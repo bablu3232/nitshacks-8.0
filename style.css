@@ -1,0 +1,241 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #0f172a, #020617);
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+.app-header {
+  text-align: center;
+  padding: 1.5rem 1rem 1rem;
+  border-bottom: 1px solid #1f2937;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin-top: 0.25rem;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.top-nav {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 1rem;
+  flex-wrap: wrap;
+}
+
+.top-nav button {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #4b5563;
+  background: #020617;
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.top-nav button:hover {
+  transform: translateY(-1px);
+  background: #111827;
+  border-color: #60a5fa;
+}
+
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+}
+
+.section {
+  display: none;
+  margin-top: 1rem;
+}
+
+.section.active {
+  display: block;
+}
+
+.section h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.35rem;
+}
+
+.section-info {
+  color: #9ca3af;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.section-info.small {
+  font-size: 0.8rem;
+}
+
+.card {
+  background: #020617;
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #1f2937;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.card h3 {
+  margin-bottom: 0.75rem;
+  font-size: 1.05rem;
+}
+
+.form-group {
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: #d1d5db;
+}
+
+.form-group input {
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid #4b5563;
+  background: #020617;
+  color: #e5e7eb;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.form-group input:focus {
+  border-color: #60a5fa;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+button[type="submit"],
+button.action-btn {
+  margin-top: 0.25rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: none;
+  background: #2563eb;
+  color: #f9fafb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+button[type="submit"]:hover,
+button.action-btn:hover {
+  background: #1d4ed8;
+}
+
+button.action-btn.secondary {
+  background: #374151;
+}
+
+button.action-btn.secondary:hover {
+  background: #4b5563;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+th,
+td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #1f2937;
+  text-align: left;
+}
+
+th {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+td {
+  color: #e5e7eb;
+  word-break: break-all;
+}
+
+.status-pill {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.status-active {
+  background: rgba(34, 197, 94, 0.2);
+  color: #bbf7d0;
+}
+
+.status-revoked {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+}
+
+.status-expired {
+  background: rgba(234, 179, 8, 0.18);
+  color: #facc15;
+}
+
+.message {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #a5b4fc;
+}
+
+.verify-result {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px dashed #374151;
+  min-height: 60px;
+  font-size: 0.9rem;
+}
+
+.verify-result .title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.verify-ok {
+  color: #4ade80;
+}
+
+.verify-bad {
+  color: #f97373;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 0.75rem 1rem 1.5rem;
+  border-top: 1px solid #1f2937;
+  color: #6b7280;
+  font-size: 0.8rem;
+}

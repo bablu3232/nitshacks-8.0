@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Decentralized Skills Passport</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Decentralized & Privacy-Preserving Skills Passport</h1>
+    <p class="subtitle">Student • Issuer • Verifier – Demo Prototype</p>
+  </header>
+
+  <nav class="top-nav">
+    <button onclick="showSection('student')">Student Wallet</button>
+    <button onclick="showSection('issuer')">Institution Issuer</button>
+    <button onclick="showSection('verifier')">Employer / Verifier</button>
+  </nav>
+
+  <main>
+    <!-- STUDENT SECTION -->
+    <section id="student" class="section active">
+      <h2>👩‍🎓 Student Passport Wallet</h2>
+      <p class="section-info">
+        This page simulates a student's Web3 wallet showing all verified credentials they own.
+      </p>
+
+      <div class="card">
+        <h3>Find My Credentials</h3>
+        <form id="studentSearchForm">
+          <div class="form-group">
+            <label for="studentWalletSearch">Wallet Address (Email or ID)</label>
+            <input
+              type="text"
+              id="studentWalletSearch"
+              placeholder="e.g. naveen@student.com"
+              required
+            />
+          </div>
+          <button type="submit">Show My Credentials</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>My Credentials</h3>
+        <table id="studentTable">
+          <thead>
+            <tr>
+              <th>Credential ID</th>
+              <th>Institution</th>
+              <th>Course / Skill</th>
+              <th>Issued On</th>
+              <th>Expires On</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ISSUER SECTION -->
+    <section id="issuer" class="section">
+      <h2>🏛️ Institutional Issuer Portal</h2>
+      <p class="section-info">
+        Universities or clubs issue verifiable credentials to a student's wallet.
+      </p>
+
+      <div class="card">
+        <h3>Issue New Credential</h3>
+        <form id="issuerForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="institutionName">Institution Name</label>
+              <input
+                type="text"
+                id="institutionName"
+                placeholder="e.g. ABC University"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="studentName">Student Name</label>
+              <input
+                type="text"
+                id="studentName"
+                placeholder="e.g. Naveen Poola"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="studentWallet">Student Wallet Address</label>
+              <input
+                type="text"
+                id="studentWallet"
+                placeholder="e.g. naveen@student.com"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="courseName">Course / Skill</label>
+              <input
+                type="text"
+                id="courseName"
+                placeholder="e.g. Blockchain Fundamentals"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="issueDate">Issue Date</label>
+              <input type="date" id="issueDate" required />
+            </div>
+            <div class="form-group">
+              <label for="expiryDate">Expiry Date (optional)</label>
+              <input type="date" id="expiryDate" />
+            </div>
+          </div>
+          <button type="submit">Mint Credential</button>
+        </form>
+        <p id="issuerMessage" class="message"></p>
+      </div>
+
+      <div class="card">
+        <h3>All Issued Credentials (Mini “Blockchain”)</h3>
+        <p class="section-info small">
+          For demo, we store credentials in browser localStorage as a simple chain with hashes.
+        </p>
+        <table id="issuerTable">
+          <thead>
+            <tr>
+              <th>Credential ID</th>
+              <th>Student</th>
+              <th>Wallet</th>
+              <th>Course</th>
+              <th>Status</th>
+              <th>Hash</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VERIFIER SECTION -->
+    <section id="verifier" class="section">
+      <h2>💼 Employer / Third-Party Verifier</h2>
+      <p class="section-info">
+        Employers enter a credential ID to check if it is valid, expired, or revoked.
+      </p>
+
+      <div class="card">
+        <h3>Verify Credential</h3>
+        <form id="verifyForm">
+          <div class="form-group">
+            <label for="verifyId">Credential ID</label>
+            <input
+              type="text"
+              id="verifyId"
+              placeholder="e.g. CERT-1720000000000-1234"
+              required
+            />
+          </div>
+          <button type="submit">Verify</button>
+        </form>
+
+        <div id="verifyResult" class="verify-result">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Hackathon Demo • Blockchain & Web3 • Skills Passport</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

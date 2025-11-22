@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skills Passport — Advanced Pages (ZKP, Issuer Registry, Dynamic Credentials)</title>
+  <style>
+    /* Basic dark theme — keeps same look as previous prototype */
+    :root{
+      --bg:#06070b;--card:#071025;--muted:#9ca3af;--accent:#60a5fa;--glass:rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,'Helvetica Neue',Arial}
+    body{margin:0;background:linear-gradient(180deg,#020617 0%, #071025 100%);color:#e6eef8}
+    header{Padding:20px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.03)}
+    header h1{margin:0;font-size:1.2rem}
+    nav{display:flex;gap:8px;justify-content:center;padding:12px}
+    nav button{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:8px 12px;border-radius:999px;cursor:pointer}
+    main{max-width:1100px;margin:18px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+    .card{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    label{display:block;font-size:0.85rem;color:var(--muted);margin-bottom:6px}
+    input,select,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:var(--glass);color:inherit}
+    .muted{color:var(--muted);font-size:0.9rem}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.88rem}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:600}
+    .green{background:rgba(34,197,94,0.12);color:#bbf7d0}
+    .red{background:rgba(248,113,113,0.12);color:#fecaca}
+    .yellow{background:rgba(234,179,8,0.12);color:#facc15}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    button.primary{background:linear-gradient(90deg,#2563eb,#1d4ed8);border:none;color:white;padding:8px 12px;border-radius:8px;cursor:pointer}
+    small.note{color:var(--muted)}
+    .mono{font-family:ui-monospace,Menlo,Monaco,Consolas,'Liberation Mono',monospace}
+    .center{text-align:center}
+    .hidden{display:none}
+    footer{padding:20px;text-align:center;color:var(--muted)}
+    .block{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);margin-bottom:10px}
+    .proposal{padding:8px;border-radius:8px;border:1px dashed rgba(255,255,255,0.03);margin-bottom:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Skills Passport — Advanced Demo</h1>
+    <div class="muted">Selective Disclosure (ZKP simulation) • Decentralized Issuer Registry (DAO simulation) • Dynamic/Expiring credentials</div>
+  </header>
+  <nav>
+    <button onclick="showTab('zkp')">Selective Disclosure (ZKP)</button>
+    <button onclick="showTab('registry')">Issuer Registry (DAO)</button>
+    <button onclick="showTab('blocks')">Blockchain Explorer</button>
+    <button onclick="showTab('manage')">Credential Management</button>
+  </nav>
+
+  <main>
+    <!-- ZKP Demo -->
+    <section id="zkp" class="tab">
+      <div class="grid">
+        <div class="card">
+          <h3>Student — Generate Proof (Selective Disclosure)</h3>
+          <p class="muted">Select a credential you own and create a privacy-preserving proof for a fact.</p>
+          <label for="zkpWallet">Your Wallet</label>
+          <input id="zkpWallet" placeholder="student@example.com or wallet id" />
+
+          <label for="zkpCredSelect">Select Credential</label>
+          <select id="zkpCredSelect"></select>
+
+          <label for="zkpClaim">Claim to prove</label>
+          <select id="zkpClaim">
+            <option value="hasDegree">I have a degree</option>
+            <option value="ageOver18">I am over 18</option>
+          </select>
+
+          <div style="margin-top:8px" class="actions">
+            <button class="primary" onclick="generateProof()">Generate Proof</button>
+            <button onclick="clearProofs()">Clear Proofs</button>
+          </div>
+
+          <p class="muted" style="margin-top:8px">Generated proof (share this to a verifier). Proof does NOT contain your name — only a cryptographic commitment that can be verified against the registry.</p>
+          <textarea id="proofOutput" rows="6" class="mono" readonly></textarea>
+        </div>
+
+        <div class="card">
+          <h3>Verifier — Check Proof</h3>
+          <p class="muted">Paste the proof you received from the student. The verifier does not see student's private fields.</p>
+          <label for="proofInput">Paste Proof</label>
+          <textarea id="proofInput" rows="6" class="mono"></textarea>
+          <div style="margin-top:8px" class="actions">
+            <button class="primary" onclick="verifyProof()">Verify Proof</button>
+            <button onclick="document.getElementById('proofInput').value=''">Clear</button>
+          </div>
+
+          <div id="verifyResult" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Issuer Registry (DAO sim) -->
+    <section id="registry" class="tab hidden">
+      <div class="grid">
+        <div class="card">
+          <h3>Issuer Registry</h3>
+          <p class="muted">Approved institutions that may mint credentials. This simulates an on-chain DAO registry. New issuers can be proposed and voted on by existing registered issuers.</p>
+
+          <label for="newIssuerName">New Issuer Name</label>
+          <input id="newIssuerName" placeholder="Acme University" />
+          <label for="newIssuerId">Issuer ID (wallet/address)</label>
+          <input id="newIssuerId" placeholder="issuer@acme.edu" />
+
+          <div class="actions" style="margin-top:8px">
+            <button class="primary" onclick="proposeIssuer()">Propose Issuer</button>
+            <button onclick="clearNewIssuer()">Clear</button>
+          </div>
+
+          <h4 style="margin-top:12px">Open Proposals</h4>
+          <div id="proposals"></div>
+        </div>
+
+        <div class="card">
+          <h3>Registered Issuers</h3>
+          <p class="muted">Only these can mint credentials. Start the demo with a default issuer ("GenIssuer").</p>
+          <div id="issuerList"></div>
+
+          <h4 style="margin-top:12px">Quick Actions</h4>
+          <div class="actions">
+            <button onclick="resetRegistry()">Reset Registry</button>
+            <button onclick="addDefaultIssuer()">Add Default Issuer</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blockchain explorer -->
+    <section id="blocks" class="tab hidden">
+      <div class="grid">
+        <div class="card">
+          <h3>Mini Blockchain Explorer</h3>
+          <p class="muted">Blocks contain credentials. Click a block to expand details.</p>
+          <div id="blockExplorer"></div>
+        </div>
+
+        <div class="card">
+          <h3>Search Credential</h3>
+          <label for="searchCredId">Credential ID</label>
+          <input id="searchCredId" placeholder="CERT-..." />
+          <div class="actions" style="margin-top:8px">
+            <button class="primary" onclick="searchCredential()">Search</button>
+          </div>
+          <div id="searchResult" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Manage (mint/revoke/renew) -->
+    <section id="manage" class="tab hidden">
+      <div class="grid">
+        <div class="card">
+          <h3>Mint Credential (Issuer)</h3>
+          <label for="mintIssuer">Issuer ID (must be registered)</label>
+          <input id="mintIssuer" placeholder="issuer@acme.edu" />
+          <label for="mintStudent">Student Wallet / ID</label>
+          <input id="mintStudent" placeholder="student@example.com" />
+          <label for="mintCourse">Course / Skill</label>
+          <input id="mintCourse" placeholder="Blockchain Fundamentals" />
+          <label for="mintIssueDate">Issue Date</label>
+          <input id="mintIssueDate" type="date" />
+          <label for="mintExpiryDate">Expiry Date (optional)</label>
+          <input id="mintExpiryDate" type="date" />
+          <div class="actions" style="margin-top:10px">
+            <button class="primary" onclick="mintFromIssuer()">Mint Credential</button>
+            <button onclick="document.getElementById('mintIssuer').value=''">Clear</button>
+          </div>
+          <p id="mintMessage" class="muted" style="margin-top:8px"></p>
+        </div>
+
+        <div class="card">
+          <h3>Manage Existing Credentials</h3>
+          <label for="manageCredId">Credential ID</label>
+          <input id="manageCredId" placeholder="CERT-..." />
+          <div style="margin-top:8px" class="actions">
+            <button onclick="revokeById()">Revoke</button>
+            <button onclick="renewById()">Renew (extend expiry by 1 year)</button>
+            <button onclick="deleteCredential()">Delete (for demo)</button>
+          </div>
+          <p id="manageMessage" class="muted" style="margin-top:8px"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Built for hackathon demo — not production. This simulates advanced features (ZKP + DAO registry + expiry/revoke/renew).
+  </footer>
+
+  <script>
+    /*******************************************************************
+     * Advanced Pages Script
+     * - Uses localStorage for persistence (demo only)
+     * - Keys used: 'skills_passport_chain', 'issuer_registry', 'dao_proposals'
+     * - ZKP simulation: commitment + nonce proof verifying claims without revealing name
+     * - DAO simulation: registered issuers can propose new issuers and vote
+     * - Dynamic credentials: expiry, revoke, renew supported
+     *******************************************************************/
+
+    // storage helpers
+    const CHAIN_KEY = 'skills_passport_chain';
+    const ISSUER_KEY = 'issuer_registry';
+    const PROPOSAL_KEY = 'dao_proposals';
+
+    function saved(key){return JSON.parse(localStorage.getItem(key) || 'null');}
+    function save(key, val){localStorage.setItem(key, JSON.stringify(val));}
+
+    // chain helpers
+    function loadChain(){return saved(CHAIN_KEY) || [];}
+    function saveChain(chain){save(CHAIN_KEY, chain);}    
+
+    function simpleHash(s){ // simple 32-bit hash, demo only
+      let h=0; for(let i=0;i<s.length;i++){h=(h<<5)-h + s.charCodeAt(i); h|=0;} return (h>>>0).toString(16).padStart(8,'0');
+    }
+
+    function generateCredentialId(){return 'CERT-'+Date.now()+'-'+Math.floor(Math.random()*9000+1000);} 
+
+    function computeStatus(c){
+      if(c.status==='revoked') return 'revoked';
+      if(c.expiryDate){
+        const today=new Date().setHours(0,0,0,0); const exp=new Date(c.expiryDate).setHours(0,0,0,0);
+        if(exp < today) return 'expired';
+      }
+      return 'active';
+    }
+
+    // ISSUER REGISTRY with DAO simulation
+    function loadIssuers(){return saved(ISSUER_KEY) || [];}
+    function saveIssuers(list){save(ISSUER_KEY, list);}    
+    function loadProposals(){return saved(PROPOSAL_KEY) || [];}
+    function saveProposals(p){save(PROPOSAL_KEY, p);}    
+
+    function addDefaultIssuer(){
+      const list=loadIssuers();
+      if(list.find(i=>i.id==='genissuer@demo')) return; // already added
+      list.push({id:'genissuer@demo',name:'GenIssuer',addedAt:new Date().toISOString()});
+      saveIssuers(list); renderIssuerList(); renderProposals();
+      alert('Default issuer added: genissuer@demo');
+    }
+
+    function resetRegistry(){if(confirm('Reset registry and proposals?')){localStorage.removeItem(ISSUER_KEY);localStorage.removeItem(PROPOSAL_KEY);renderIssuerList();renderProposals();}}
+
+    function proposeIssuer(){
+      const name=document.getElementById('newIssuerName').value.trim();
+      const id=document.getElementById('newIssuerId').value.trim().toLowerCase();
+      if(!name||!id){alert('Provide name and id'); return;}
+      const proposals=loadProposals();
+      const p={id, name, proposer: 'guest', votes:[], createdAt:new Date().toISOString(), status:'open'};
+      proposals.push(p); saveProposals(proposals); renderProposals();
+      document.getElementById('newIssuerName').value='';document.getElementById('newIssuerId').value='';
+    }
+
+    function voteProposal(idx){
+      const proposals=loadProposals(); const issuers=loadIssuers();
+      const voter = prompt('Enter your issuer id (must be registered to vote)'); if(!voter) return; if(!issuers.find(i=>i.id===voter)) {alert('Not a registered issuer — only registered issuers can vote'); return;}
+      const p=proposals[idx]; if(!p||p.status!=='open') return; if(p.votes.includes(voter)){alert('You have already voted'); return;} p.votes.push(voter);
+      // simple majority: if votes > issuers.length/2 approve
+      if(p.votes.length > issuers.length/2){
+        // approve and add to registry
+        const reg=loadIssuers(); reg.push({id:p.id,name:p.name,addedAt:new Date().toISOString()}); saveIssuers(reg);
+        p.status='approved';
+        alert('Proposal approved and issuer added');
+      }
+      saveProposals(proposals); renderProposals(); renderIssuerList();
+    }
+
+    function renderProposals(){
+      const cont=document.getElementById('proposals'); cont.innerHTML=''; const proposals=loadProposals();
+      if(!proposals.length) return cont.innerHTML='<div class="muted">No open proposals</div>';
+      proposals.forEach((p,idx)=>{
+        const div=document.createElement('div'); div.className='proposal';
+        div.innerHTML=`<strong>${p.name}</strong> <small class="muted">(${p.id})</small><div class="muted">Status: ${p.status}</div>
+          <div class="muted">Votes: ${p.votes.length}</div>
+          <div style="margin-top:6px"><button onclick="voteProposal(${idx})">Vote (registered issuers)</button></div>`;
+        cont.appendChild(div);
+      });
+    }
+
+    function renderIssuerList(){
+      const cont=document.getElementById('issuerList'); cont.innerHTML='';
+      const list=loadIssuers(); if(!list.length) return cont.innerHTML='<div class="muted">No registered issuers</div>';
+      const table=document.createElement('table'); const thead=document.createElement('thead'); thead.innerHTML='<tr><th>Issuer ID</th><th>Name</th><th>Added</th></tr>'; table.appendChild(thead);
+      const tbody=document.createElement('tbody'); list.forEach(i=>{const tr=document.createElement('tr');tr.innerHTML=`<td class="mono">${i.id}</td><td>${i.name}</td><td class="muted">${new Date(i.addedAt).toLocaleString()}</td>`;tbody.appendChild(tr)}); table.appendChild(tbody); cont.appendChild(table);
+    }
+
+    // Minting with registry check
+    function mintFromIssuer(){
+      const issuer=document.getElementById('mintIssuer').value.trim().toLowerCase(); const student=document.getElementById('mintStudent').value.trim();
+      const course=document.getElementById('mintCourse').value.trim(); const issueDate=document.getElementById('mintIssueDate').value; const expiry=document.getElementById('mintExpiryDate').value;
+      const msg=document.getElementById('mintMessage'); msg.textContent='';
+      if(!issuer||!student||!course){msg.textContent='Provide issuer, student and course'; return;}
+      const issuers=loadIssuers(); if(!issuers.find(i=>i.id===issuer)){msg.textContent='Issuer not registered — cannot mint'; return;}
+      const chain=loadChain(); const id=generateCredentialId(); const prev=chain.length?chain[chain.length-1].hash:'GENESIS';
+      const payload=JSON.stringify({id,issuer,student,course,issueDate,expiry,prev}); const hash=simpleHash(payload);
+      const cred={id,issuer,institutionName:issuer,studentName:student,studentWallet:student,courseName:course,issueDate,expiryDate:expiry,previousHash:prev,hash,status:'active',createdAt:new Date().toISOString()};
+      chain.push(cred); saveChain(chain); msg.textContent='Minted: '+id; renderExplorer(); populateZKSelect();
+    }
+
+    // Manage commands
+    function revokeById(){const id=document.getElementById('manageCredId').value.trim(); const msg=document.getElementById('manageMessage'); msg.textContent=''; if(!id){msg.textContent='Enter ID';return;} const chain=loadChain(); const idx=chain.findIndex(c=>c.id===id); if(idx<0){msg.textContent='Not found';return;} chain[idx].status='revoked'; saveChain(chain); msg.textContent='Revoked '+id; renderExplorer();}
+    function renewById(){const id=document.getElementById('manageCredId').value.trim(); const msg=document.getElementById('manageMessage'); msg.textContent=''; if(!id){msg.textContent='Enter ID';return;} const chain=loadChain(); const idx=chain.findIndex(c=>c.id===id); if(idx<0){msg.textContent='Not found';return;} const cur=chain[idx]; const now=new Date(); const newExp=new Date(now.setFullYear(now.getFullYear()+1)); cur.expiryDate=newExp.toISOString().slice(0,10); cur.status='active'; saveChain(chain); msg.textContent='Renewed '+id+' until '+cur.expiryDate; renderExplorer();}
+    function deleteCredential(){const id=document.getElementById('manageCredId').value.trim(); if(!id) return; let chain=loadChain(); chain=chain.filter(c=>c.id!==id); saveChain(chain); renderExplorer(); document.getElementById('manageMessage').textContent='Deleted (demo)'; populateZKSelect();}
+
+    // Explorer
+    function renderExplorer(){
+      const cont=document.getElementById('blockExplorer'); cont.innerHTML=''; const chain=loadChain();
+      // group into simple blocks of 3 credentials per block (demo)
+      const blocks = [];
+      for(let i=0;i<chain.length;i+=3){blocks.push(chain.slice(i,i+3));}
+      blocks.reverse(); // newest first
+      if(!blocks.length) {cont.innerHTML='<div class="muted">No blocks yet</div>'; return}
+      blocks.forEach((block,bi)=>{
+        const div=document.createElement('div'); div.className='block';
+        const blockId = 'block-'+(chain.length - (bi*3));
+        let html=`<strong>${blockId}</strong> <div class="muted">${block.length} credential(s)</div>`;
+        html += '<ul>';
+        block.forEach(c=>{ const status=computeStatus(c); html += `<li><span class="mono">${c.id}</span> — ${c.courseName} — <span class="pill ${status==='active'?'green':status==='revoked'?'red':'yellow'}">${status}</span></li>`});
+        html += '</ul>';
+        html += '<details><summary class="muted">Show block hashes & details</summary><div style="margin-top:6px">';
+        block.forEach(c=>{ html += `<div style="margin-bottom:6px"><strong>${c.id}</strong><div class="muted">hash: <span class="mono">${c.hash}</span></div><div class="muted">prev: <span class="mono">${c.previousHash}</span></div></div>`});
+        html += '</div></details>';
+        div.innerHTML = html; cont.appendChild(div);
+      });
+    }
+
+    function searchCredential(){const id=document.getElementById('searchCredId').value.trim(); const res=document.getElementById('searchResult'); res.innerHTML=''; if(!id) return; const chain=loadChain(); const c=chain.find(it=>it.id===id); if(!c) return res.innerHTML='<div class="muted">Not found</div>'; res.innerHTML=`<div><strong>${c.id}</strong><div class="muted">${c.courseName} — Issuer: ${c.issuer}</div><div class="muted">Status: ${computeStatus(c)}</div><pre class="mono">hash: ${c.hash}\nprev: ${c.previousHash}</pre></div>`}
+
+    // ZKP simulation: create a commitment to the credential and produce a proof for a claim
+    // Approach (demo-only):
+    // - Credential contains attributes: courseName, issueDate, expiryDate. We support two claim types: "hasDegree" and "ageOver18".
+    // - For privacy, student generates a random nonce and computes commitment = hash(hash(credentialId + secret) + claimTag + nonce)
+    // - Verifier finds credential on-chain by credentialId and recomputes expected commitment using credential data (but without student's name) and the provided nonce and claim. If matches -> proof valid.
+    // NOTE: This is only a demonstration of the selective-disclosure idea (NOT a real ZKP).
+
+    function populateZKSelect(){
+      const sel=document.getElementById('zkpCredSelect'); sel.innerHTML=''; const wallet=document.getElementById('zkpWallet').value.trim(); const chain=loadChain();
+      const walletFilter = wallet?chain.filter(c=>c.studentWallet && c.studentWallet.toLowerCase()===wallet.toLowerCase()):[];
+      const list = wallet?walletFilter:chain.slice(-10).reverse(); // if wallet provided show owner's else show recent
+      if(!list.length) {sel.innerHTML='<option value="">-- no credentials --</option>'; return}
+      list.forEach(c=>{const opt=document.createElement('option'); opt.value=c.id; opt.textContent=c.id+' — '+c.courseName; sel.appendChild(opt)});
+    }
+
+    document.getElementById('zkpWallet').addEventListener('input', populateZKSelect);
+
+    function generateProof(){
+      const wallet=document.getElementById('zkpWallet').value.trim(); const credId=document.getElementById('zkpCredSelect').value; const claim=document.getElementById('zkpClaim').value; const out=document.getElementById('proofOutput'); out.value='';
+      if(!credId){alert('Select a credential'); return}
+      const chain=loadChain(); const cred=chain.find(c=>c.id===credId);
+      if(!cred){alert('Credential not found'); return}
+      // secret is student's wallet (simulating student's private secret), but we will not reveal it — instead generate a random nonce
+      const secret=cred.studentWallet; const nonce = Math.floor(Math.random()*1e9).toString(16);
+      const claimTag = claim;
+      const h1 = simpleHash(cred.id + '|' + claimTag + '|' + secret);
+      const commitment = simpleHash(h1 + '|' + nonce);
+      const proof = {credentialId: cred.id, claim: claimTag, nonce, commitment, issuer: cred.issuer, course: cred.courseName, issueDate: cred.issueDate, expiryDate: cred.expiryDate};
+      out.value = JSON.stringify(proof, null, 2);
+      const savedProofs = JSON.parse(localStorage.getItem('demo_proofs')||'[]'); savedProofs.push(proof); localStorage.setItem('demo_proofs', JSON.stringify(savedProofs));
+    }
+
+    function clearProofs(){localStorage.removeItem('demo_proofs'); document.getElementById('proofOutput').value='';}
+
+    function verifyProof(){
+      const input = document.getElementById('proofInput').value.trim(); const out = document.getElementById('verifyResult'); out.innerHTML=''; if(!input){out.innerHTML='<div class="muted">Paste a proof to verify</div>';return}
+      let proof; try{proof=JSON.parse(input);}catch(e){out.innerHTML='<div class="red">Invalid proof JSON</div>';return}
+      const chain=loadChain(); const cred=chain.find(c=>c.id===proof.credentialId);
+      if(!cred){out.innerHTML='<div class="red">Credential not found on registry</div>';return}
+      const stored = JSON.parse(localStorage.getItem('demo_proofs')||'[]'); const found = stored.find(p=>p.commitment===proof.commitment && p.credentialId===proof.credentialId);
+      if(found){
+        const status = computeStatus(cred);
+        if(status !== 'active') { out.innerHTML = `<div class="red">Proof found but credential is ${status.toUpperCase()}</div>`; return; }
+        out.innerHTML = `<div class="green">✅ Proof valid: claim <strong>${proof.claim}</strong> verified for credential <span class="mono">${proof.credentialId}</span></div>`;
+      } else {
+        out.innerHTML = `<div class="red">❌ Proof not valid — commitment not found or tampered</div>`;
+      }
+    }
+
+    // UI wiring
+    function showTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); if(id==='blocks') renderExplorer(); if(id==='registry'){renderIssuerList();renderProposals()} if(id==='zkp') populateZKSelect();}
+
+    // initialize demo data if empty
+    function ensureDemoData(){ if(!loadIssuers().length){ saveIssuers([{id:'genissuer@demo',name:'GenIssuer',addedAt:new Date().toISOString()}]); }
+      if(!loadChain().length){
+        const demo = [];
+        const id1 = generateCredentialId(); demo.push({id:id1,issuer:'genissuer@demo',institutionName:'GenIssuer',studentName:'alice',studentWallet:'alice@example.com',courseName:'B.Tech Computer Science',issueDate:'2023-05-10',expiryDate:'2028-05-10',previousHash:'GENESIS',hash:simpleHash('demo1'),status:'active',createdAt:new Date().toISOString()});
+        const id2 = generateCredentialId(); demo.push({id:id2,issuer:'genissuer@demo',institutionName:'GenIssuer',studentName:'bob',studentWallet:'bob@example.com',courseName:'First Aid',issueDate:'2022-02-10',expiryDate:'2023-02-10',previousHash:demo[0].hash,hash:simpleHash('demo2'),status:'active',createdAt:new Date().toISOString()});
+        saveChain(demo);
+      }
+      renderExplorer(); renderIssuerList(); renderProposals(); populateZKSelect();
+    }
+
+    // expose functions used by the HTML
+    window.proposeIssuer = proposeIssuer; window.addDefaultIssuer = addDefaultIssuer; window.resetRegistry = resetRegistry; window.voteProposal = voteProposal; window.renderExplorer = renderExplorer; window.populateZKSelect = populateZKSelect; window.mintFromIssuer = mintFromIssuer; window.revokeById = revokeById; window.renewById = renewById; window.deleteCredential = deleteCredential; window.generateProof = generateProof; window.verifyProof = verifyProof; window.clearProofs = clearProofs; window.searchCredential = searchCredential;
+
+    ensureDemoData();
+    showTab('zkp');
+  </script>
+</body>
+</html>
